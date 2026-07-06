@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TNet - Trust Network</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .active-tab { color: #3b82f6; border-top: 2px solid #3b82f6; }
+        .enterprise-mode .active-tab { color: #a855f7; border-top: 2px solid #a855f7; }
+        .hidden-page { display: none; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col pb-20 transition-colors duration-300" id="appBody">
+
+    <!-- TOP HEADER -->
+    <header class="bg-white shadow-sm px-4 py-3 flex justify-between items-center sticky top-0 z-50 transition-colors duration-300" id="mainHeader">
+        <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg" id="brandLogo">T</div>
+            <span class="text-xl font-bold tracking-wide">TNet <span class="text-xs font-normal text-gray-500" id="workspaceBadge">(Normal)</span></span>
+        </div>
+        <!-- Switch Workspace Toggle -->
+        <button id="headerSwitchBtn" class="bg-gray-100 hover:bg-gray-200 text-xs font-semibold py-1.5 px-3 rounded-full flex items-center space-x-1 transition">
+            <i class="fa-solid animate-pulse fa-toggle-off text-base text-gray-400" id="toggleIcon"></i>
+            <span id="toggleText">Go Pro</span>
+        </button>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 p-4 max-w-md mx-auto w-full">
+
+        <!-- ================= NORMAL USER PAGES ================= -->
+        
+        <!-- HOME PAGE -->
+        <section id="page-home" class="page-content">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-5 rounded-2xl shadow-md mb-6">
+                <h1 class="text-2xl font-bold mb-1">Verify Reality.</h1>
+                <p class="text-sm opacity-90">TNet inakusaidia kutambua picha na maudhui yaliyotengenezwa na AI kwa sekunde chache.</p>
+            </div>
+            
+            <h3 class="text-lg font-bold mb-3">Quick Actions</h3>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <button onclick="switchPage('scan')" class="bg-white p-4 rounded-xl shadow-xs border border-gray-100 text-left flex flex-col justify-between h-28 hover:border-blue-500 transition">
+                    <i class="fa-solid fa-qrcode text-2xl text-blue-500"></i>
+                    <span class="font-semibold text-sm">Scan Content</span>
+                </button>
+                <button onclick="switchPage('history')" class="bg-white p-4 rounded-xl shadow-xs border border-gray-100 text-left flex flex-col justify-between h-28 hover:border-blue-500 transition">
+                    <i class="fa-solid fa-history text-2xl text-blue-500"></i>
+                    <span class="font-semibold text-sm">View History</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- SCAN PAGE (CORE FEATURE) -->
+        <section id="page-scan" class="page-content hidden-page">
+            <h2 class="text-xl font-bold mb-4">AI Detector (Sightengine)</h2>
+            
+            <!-- Drag & Drop Area -->
+            <div class="border-2 border-dashed border-gray-300 rounded-2xl p-6 text-center bg-white hover:border-blue-500 transition mb-4 cursor-pointer" id="dropArea">
+                <i class="fa-solid fa-cloud-arrow-up text-4xl text-gray-400 mb-2"></i>
+                <p class="font-medium text-sm">Sogeza na urushe picha hapa (Drag & Drop)</p>
+                <p class="text-xs text-gray-400 mt-1">Au bofya kuchagua faili</p>
+                <input type="file" id="fileInput" class="hidden" accept="image/*">
+            </div>
+
+            <div class="flex items-center my-4 text-gray-400">
+                <hr class="flex-1 border-gray-200">
+                <span class="px-3 text-xs uppercase font-bold">Au tumia Link</span>
+                <hr class="flex-1 border-gray-200">
+            </div>
+
+            <!-- URL Input -->
+            <div class="mb-4">
+                <div class="flex shadow-xs rounded-xl overflow-hidden border border-gray-200 bg-white">
+                    <span class="bg-gray-50 px-3 flex items-center text-gray-400"><i class="fa-solid fa-link"></i></span>
+                    <input type="url" id="imageUrl" placeholder="Weka URL ya picha hapa..." class="w-full px-3 py-3 text-sm outline-none">
+                </div>
+            </div>
+
+            <button id="scanBtn" onclick="testAPI()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition shadow-md flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span id="scanBtnText">Anza Kukagua</span>
+            </button>
+
+            <!-- API SCAN RESULT DISPLAY -->
+            <div id="resultContainer" class="mt-4 hidden">
+                <h4 class="text-xs font-bold text-gray-400 mb-1">MATOKEO KUTOKA SIGHTENGINE</h4>
+                <pre id="result" class="bg-gray-900 text-green-400 p-4 rounded-xl text-xs font-mono overflow-x-auto shadow-inner max-h-60"></pre>
+            </div>
+        </section>
+
+        <!-- HISTORY PAGE -->
+        <section id="page-history" class="page-content hidden-page">
+            <h2 class="text-xl font-bold mb-4">Scan History</h2>
+            <div class="space-y-3">
+                <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-xs flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600"><i class="fa-solid fa-robot"></i></div>
+                        <div>
+                            <h4 class="font-semibold text-sm truncate w-40">avatar_generation.jpg</h4>
+                            <p class="text-xs text-gray-400">Leo, 14:20 PM</p>
+                        </div>
+                    </div>
+                    <span class="bg-red-50 text-red-600 text-xs font-bold px-2 py-1 rounded-md">94% AI</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- REPORT PAGE -->
+        <section id="page-report" class="page-content hidden-page">
+            <h2 class="text-xl font-bold mb-2">Analytics & Reports</h2>
+            <p class="text-xs text-gray-500 mb-4" id="reportDesc">Muhtasari wa matumizi yako binafsi ya TNet.</p>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-xl border border-gray-100 text-center shadow-xs">
+                    <span class="text-xs text-gray-400 font-medium block mb-1">Jumla ya Scan</span>
+                    <span class="text-2xl font-bold text-gray-800">42</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-gray-100 text-center shadow-xs">
+                    <span class="text-xs text-gray-400 font-medium block mb-1">AI Detected</span>
+                    <span class="text-2xl font-bold text-red-500">18</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROFILE PAGE -->
+        <section id="page-profile" class="page-content hidden-page">
+            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-xs text-center mb-4">
+                <div class="w-20 h-20 rounded-full bg-blue-100 text-blue-600 mx-auto flex items-center justify-center text-3xl font-bold mb-2 shadow-xs"><i class="fa-solid fa-user-astronaut"></i></div>
+                <h3 class="font-bold text-lg">Mtumiaji TNet</h3>
+                <p class="text-xs text-gray-400">free.user@tnet.com</p>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-100 shadow-xs overflow-hidden">
+                <div class="p-3 border-b border-gray-50 flex justify-between items-center cursor-pointer hover:bg-gray-50">
+                    <span class="text-sm font-medium"><i class="fa-solid fa-gear w-6 text-gray-400"></i> Settings</span>
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
+                </div>
+                <div class="p-3 flex justify-between items-center cursor-pointer hover:bg-gray-50" id="profileSwitchArea">
+                    <span class="text-sm font-medium"><i class="fa-solid fa-building-shield w-6 text-purple-500"></i> Workspace ya Biashara</span>
+                    <span class="text-xs bg-purple-100 text-purple-700 font-bold px-2 py-0.5 rounded-full" id="profileBadgeText">Activate</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ENTERPRISE / DEV PAGES ================= -->
+
+        <!-- DEV 💻 PAGE -->
+        <section id="page-develop" class="page-content hidden-page">
+            <h2 class="text-xl font-bold mb-1">Developer Console 💻</h2>
+            <p class="text-xs text-gray-500 mb-4">Unganisha mifumo yako na Sightengine kupitia TNet Key.</p>
+
+            <!-- Key Generator Component -->
+            <div class="bg-white p-4 rounded-xl border border-purple-100 shadow-xs mb-4">
+                <label class="text-xs font-bold text-gray-400 block mb-2">TNETKEY REGISTRATION</label>
+                
+                <div class="flex bg-gray-50 rounded-lg p-3 border border-gray-200 items-center justify-between mb-3">
+                    <code class="text-xs text-purple-600 font-mono font-bold select-all overflow-x-auto whitespace-nowrap mr-2" id="apiKey">Bonyeza Kitufe Kuzalisha...</code>
+                    <button onclick="copyApiKey()" class="text-gray-400 hover:text-purple-600 px-2"><i class="fa-solid fa-copy"></i></button>
+                </div>
+
+                <button onclick="generateKey()" id="genKeyBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold py-2.5 rounded-lg transition shadow-xs">
+                    Generate New TNetKey
+                </button>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-xs">
+                <h4 class="text-sm font-bold mb-2">Webhooks & Logs</h4>
+                <div class="space-y-1 font-mono text-[11px] text-gray-500">
+                    <p><span class="text-green-600">[200 OK]</span> POST /api/image - Vercel Server</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ENTERPRISE PAGE -->
+        <section id="page-enterprise" class="page-content hidden-page">
+            <h2 class="text-xl font-bold mb-4">Enterprise Management</h2>
+            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-xs mb-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="text-sm font-bold">Timu / Waandishi</h4>
+                    <button class="text-xs bg-purple-600 text-white font-bold py-1 px-2.5 rounded-lg"><i class="fa-solid fa-user-plus"></i> Alika</button>
+                </div>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <p>Iddi Juma (Mhariri) - <span class="text-xs text-gray-400">Scans: 24</span></p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BOTTOM NAVIGATION BAR -->
+    <nav class="bg-white border-t border-gray-200 fixed bottom-0 left-0 right-0 z-50 px-2 py-1 flex justify-around items-center transition-colors duration-300" id="mainNavbar">
+        <button onclick="switchPage('home')" id="nav-home" class="flex flex-col items-center justify-center w-12 py-1 text-gray-400 active-tab">
+            <i class="fa-solid fa-house text-lg mb-0.5"></i><span class="text-[10px] font-medium">Home</span>
+        </button>
+        <button onclick="switchPage('history')" id="nav-history" class="flex flex-col items-center justify-center w-12 py-1 text-gray-400">
+            <i class="fa-solid fa-clock-rotate-left text-lg mb-0.5"></i><span class="text-[10px] font-medium">History</span>
+        </button>
+        <button onclick="switchPage('scan')" id="nav-scan" class="flex flex-col items-center justify-center w-12 py-1 text-gray-400">
+            <i class="fa-solid fa-expand text-lg mb-0.5"></i><span class="text-[10px] font-medium">Scan</span>
+        </button>
+        <button onclick="switchPage('develop')" id="nav-develop" class="hidden flex flex-col items-center justify-center w-12 py-1 text-gray-400">
+            <i class="fa-solid fa-code text-lg mb-0.5"></i><span class="text-[10px] font-medium">Develop</span>
+        </button>
+        <button onclick="switchPage('enterprise')" id="nav-enterprise" class="hidden flex flex-col items-center justify-center w-12 py-1 text-gray-400">
+            <i class="fa-solid fa-building text-lg mb-0.5"></i><span class="text-[10px] font-medium">Business</span>
+        </button>
+        <button onclick="switchPage('report')" id="nav-report" class="flex flex-col items-center justify-center w-12 py-1 text-gray-400">
+            <i class="fa-solid fa-chart-pie text-lg mb-0.5"></i><span class="text-[10px] font-medium">Report</span>
+        </button>
+        <button onclick="switchPage('profile')" id="nav-profile" class="flex flex-col items-center justify-center w-12 py-1 text-gray-400">
+            <i class="fa-solid fa-circle-user text-lg mb-0.5"></i><span class="text-[10px] font-medium">Profile</span>
+        </button>
+    </nav>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let apiKey = localStorage.getItem("tnet_key") || "";
+let isEnterpriseMode = localStorage.getItem("workspace_mode") === "enterprise";
+
+// DOM Elements
+const appBody = document.getElementById('appBody');
+const workspaceBadge = document.getElementById('workspaceBadge');
+const brandLogo = document.getElementById('brandLogo');
+const toggleIcon = document.getElementById('toggleIcon');
+const toggleText = document.getElementById('toggleText');
+const headerSwitchBtn = document.getElementById('headerSwitchBtn');
+const profileSwitchArea = document.getElementById('profileSwitchArea');
+const profileBadgeText = document.getElementById('profileBadgeText');
+const scanBtn = document.getElementById('scanBtn');
+const scanBtnText = document.getElementById('scanBtnText');
+const reportDesc = document.getElementById('reportDesc');
+const dropArea = document.getElementById('dropArea');
+const fileInput = document.getElementById('fileInput');
+
+document.addEventListener("DOMContentLoaded", () => {
+    if (apiKey) document.getElementById("apiKey").innerText = apiKey;
+    applyWorkspaceUI();
+    fetchLiveHistory(); // Inasoma historia live kupitia Vercel endpoint yako
+});
+
+// 1. ZALISHA TNETKEY (Kupitia Vercel endpoint yako)
+async function generateKey() {
+    const btn = document.getElementById('genKeyBtn');
+    btn.innerText = "Generating..."; btn.disabled = true;
+    try {
+        const res = await fetch("https://tnet-nine.vercel.app/api/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+        });
+        const data = await res.json();
+        apiKey = data.apiKey;
+        localStorage.setItem("tnet_key", apiKey);
+        document.getElementById("apiKey").innerText = apiKey;
+    } catch (err) {
+        alert("Imeshindwa kuzalisha TNetKey.");
+    } finally {
+        btn.innerText = "Generate New TNetKey"; btn.disabled = false;
+    }
+}
+
+// 2. KUKAGUA PICHA (Inaita Endpoint yako ya Vercel yenye sightengine.js ndani yake)
+async function testAPI() {
+    let imageUrl = document.getElementById("imageUrl").value.trim();
+    
+    if (!imageUrl) {
+        alert("Tafadhali weka URL ya picha kwanza.");
+        return;
+    }
+    if (!apiKey) {
+        alert("Tafadhali nenda upande wa Develop ukazalishe TNetKey kwanza.");
+        return;
+    }
+
+    scanBtnText.innerText = "Inakagua (Sightengine)...";
+    scanBtn.disabled = true;
+    document.getElementById("resultContainer").classList.remove("hidden");
+    document.getElementById("result").innerText = "TNet inawasiliana na Vercel Secure Server...";
+
+    try {
+        // Hapa tunatuma ombi kwenda kwenye API yako kuu inayotumia ile logic ya sightengine.js
+        const res = await fetch("https://tnet-nine.vercel.app/api/image", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-api-key": apiKey
+            },
+            body: JSON.stringify({ imageUrl: imageUrl })
+        });
+
+        const data = await res.json();
+        
+        // Inamwaga yale matokeo ya SIGHTENGINE RAW RESPONSE kwenye screen
+        document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+        
+        // Baada ya scan kukamilika, tunafresha history ili kuonyesha scan mpya
+        fetchLiveHistory();
+
+    } catch (err) {
+        document.getElementById("result").innerText = "Error: Imeshindwa kupata majibu kutoka salama Vercel endpoint.";
+    } finally {
+        scanBtnText.innerText = "Anza Kukagua";
+        scanBtn.disabled = false;
+    }
+}
+
+// 3. VUTA HISTORY LIVE (Kutokea Vercel ili kuzuia kuvuja kwa Supabase Keys)
+async function fetchLiveHistory() {
+    const historyContainer = document.querySelector('#page-history .space-y-3');
+    if (!historyContainer) return;
+
+    try {
+        // Tunatengeneza endpoint kule Vercel (e.g., /api/history) inayosoma Supabase kisiri
+        const res = await fetch("https://tnet-nine.vercel.app/api/history", {
+            headers: { "x-api-key": apiKey }
+        });
+        if (!res.ok) return;
+        
+        const scans = await res.json();
+        
+        // Kama kuna data, tunazisafisha na kuzimwaga kwenye UI ya History live!
+        if(scans && scans.length > 0) {
+            historyContainer.innerHTML = scans.map(scan => `
+                <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-xs flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg ${scan.is_ai ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'} flex items-center justify-center">
+                            <i class="fa-solid ${scan.is_ai ? 'fa-robot' : 'fa-user'}"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-sm truncate w-40">${scan.imageUrl || 'Scanned Link'}</h4>
+                            <p class="text-xs text-gray-400">${new Date(scan.created_at).toLocaleDateString()}</p>
+                        </div>
+                    </div>
+                    <span class="${scan.is_ai ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'} text-xs font-bold px-2 py-1 rounded-md">
+                        ${scan.ai_percentage}% AI
+                    </span>
+                </div>
+            `).join('');
+        }
+    } catch (e) {
+        console.log("History endpoint haijawa tayari kule Vercel bado.");
+    }
+}
+
+// Trigger za Drag & Drop kwa ajili ya kupokea mafaili
+dropArea.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', async () => {
+    if (!fileInput.files.length) return;
+
+    const file = fileInput.files[0];
+
+    dropArea.innerHTML = `
+        <i class="fa-solid fa-spinner animate-spin text-4xl text-purple-500 mb-2"></i>
+        <p class="font-medium text-sm">Inatengeneza Secure URL...</p>
+    `;
+
+    try {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const uploadRes = await fetch(
+            "https://tnet-nine.vercel.app/api/upload",
+            {
+                method: "POST",
+                body: formData
+            }
+        );
+
+        if (!uploadRes.ok) {
+            throw new Error("Upload failed");
+        }
+
+        const uploadData = await uploadRes.json();
+
+        if (!uploadData.secure_url) {
+            throw new Error("No URL returned");
+        }
+
+        document.getElementById("imageUrl").value = uploadData.secure_url;
+
+        dropArea.innerHTML = `
+            <i class="fa-solid fa-circle-check text-4xl text-green-500 mb-2"></i>
+            <p class="font-medium text-sm text-green-600">${file.name}</p>
+            <p class="text-xs text-gray-400">Upload imekamilika. Bonyeza Anza Kukagua.</p>
+        `;
+
+    } catch (err) {
+        console.error(err);
+
+        dropArea.innerHTML = `
+            <i class="fa-solid fa-circle-xmark text-4xl text-red-500 mb-2"></i>
+            <p class="font-medium text-sm text-red-600">Upload Imeshindikana</p>
+        `;
+    }
+});
+
+// Router na Mifumo ya Kubadili ya mwanzo ipo salama hapa chini...
+function switchPage(pageId) {
+    document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden-page'));
+    document.getElementById(`page-${pageId}`).classList.remove('hidden-page');
+    document.querySelectorAll('#mainNavbar button').forEach(b => b.classList.remove('active-tab'));
+    const selectedNav = document.getElementById(`nav-${pageId}`);
+    if (selectedNav) selectedNav.classList.add('active-tab');
+}
+
+function applyWorkspaceUI() {
+    const navHistory = document.getElementById('nav-history');
+    const navScan = document.getElementById('nav-scan');
+    const navDevelop = document.getElementById('nav-develop');
+    const navEnterprise = document.getElementById('nav-enterprise');
+
+    if (isEnterpriseMode) {
+        appBody.classList.add('enterprise-mode'); workspaceBadge.innerText = '(Enterprise)';
+        workspaceBadge.className = "text-xs font-bold text-purple-600"; brandLogo.className = "w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center text-white font-bold text-lg";
+        toggleIcon.className = "fa-solid fa-toggle-on text-base text-purple-600"; toggleText.innerText = "Normal Mode";
+        profileBadgeText.innerText = "Deactivate"; scanBtn.className = "w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-xl transition shadow-md flex items-center justify-center space-x-2";
+        reportDesc.innerText = "Ripoti kubwa za kiwango cha kampuni na timu nzima.";
+        navHistory.classList.add('hidden'); navScan.classList.add('hidden'); navDevelop.classList.remove('hidden'); navEnterprise.classList.remove('hidden');
+        switchPage('develop');
+    } else {
+        appBody.classList.remove('enterprise-mode'); workspaceBadge.innerText = '(Normal)';
+        workspaceBadge.className = "text-xs font-normal text-gray-500"; brandLogo.className = "w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg";
+        toggleIcon.className = "fa-solid fa-toggle-off text-base text-gray-400"; toggleText.innerText = "Go Pro";
+        profileBadgeText.innerText = "Activate"; scanBtn.className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition shadow-md flex items-center justify-center space-x-2";
+        reportDesc.innerText = "Muhtasari wa matumizi yako binafsi ya TNet.";
+        navHistory.classList.remove('hidden'); navScan.classList.remove('hidden'); navDevelop.classList.add('hidden'); navEnterprise.classList.add('hidden');
+        switchPage('home');
+    }
+}
+
+function toggleWorkspace() {
+    isEnterpriseMode = !isEnterpriseMode;
+    localStorage.setItem("workspace_mode", isEnterpriseMode ? "enterprise" : "normal");
+    applyWorkspaceUI();
+}
+
+headerSwitchBtn.addEventListener('click', toggleWorkspace);
+profileSwitchArea.addEventListener('click', toggleWorkspace);
+
+function copyApiKey() {
+    const text = document.getElementById('apiKey').innerText;
+    if (text.includes("...")) return;
+    navigator.clipboard.writeText(text)
+        .then(() => alert("TNetKey Copied!"));
+}       
+        
+    </script>
+</body>
+</html>
